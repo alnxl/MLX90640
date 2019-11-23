@@ -10,6 +10,8 @@ namespace AL.MLX90640Core
 {
     public class MLX90640 : IMLX90640
     {
+        Boolean IsOpend = false;
+        static Action<byte[]> mLX_ReciveDataFunc;
         MLX90640Serial mLX;
         public void GetSerial()
         {
@@ -22,11 +24,13 @@ namespace AL.MLX90640Core
                 Console.WriteLine(i);
             }
         }
-        public void Init(string portname)
+        public void Init(string portname,Action<byte[]> ReciveDataFunc)
         {
             mLX = new MLX90640Serial(portname);
+            mLX_ReciveDataFunc = ReciveDataFunc;
             if(mLX.Open())
             {
+                IsOpend = true;
                 StartMonitor();
             }
         }
@@ -35,6 +39,7 @@ namespace AL.MLX90640Core
             if (mLX.IsOpen)
             {
                 mLX.Close();
+                IsOpend = false;
                 mLX.Dispose();
             }
         }
@@ -49,18 +54,18 @@ namespace AL.MLX90640Core
         {
             //收到消息时要触发的事件
             mLX.ReceivedEvent += RecivedData;
-
             mLX.StartMonitotData();
         }
         public static void RecivedData(object sender, byte[] bytes)
         {
             Task.Run(() => {
-                foreach (var i in bytes)
-                {
-                    Console.Write(i + " ");
-                }
-                Console.WriteLine("");
+                mLX_ReciveDataFunc.Invoke(bytes);
             });
+        }
+
+        public bool IsOpen()
+        {
+            return this.IsOpend;
         }
     }
 }

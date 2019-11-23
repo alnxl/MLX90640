@@ -13,7 +13,6 @@ namespace AL.MLX90640Core
         {
 
         }
-        //无意义，只是因为父类的 Sp_DataReceived() 不是 public
         public void StartMonitotData()
         {
 
